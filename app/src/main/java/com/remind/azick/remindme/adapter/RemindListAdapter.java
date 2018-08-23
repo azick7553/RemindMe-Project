@@ -1,6 +1,5 @@
 package com.remind.azick.remindme.adapter;
 
-import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -11,6 +10,7 @@ import android.widget.TextView;
 import com.remind.azick.remindme.R;
 import com.remind.azick.remindme.dto.RemindDTO;
 
+import java.text.DateFormat;
 import java.util.List;
 
 public class RemindListAdapter extends RecyclerView.Adapter<RemindListAdapter.RemindViewHolder>{
@@ -29,8 +29,10 @@ public class RemindListAdapter extends RecyclerView.Adapter<RemindListAdapter.Re
 
     @Override
     public void onBindViewHolder(RemindViewHolder holder, int position) {
+        DateFormat dateFormat = DateFormat.getDateInstance(DateFormat.DEFAULT);
         RemindDTO item = data.get(position);
         holder.title.setText(item.getTitle());
+        holder.date.setText(dateFormat.format(item.getRemindDate()));
     }
 
     @Override
@@ -41,13 +43,18 @@ public class RemindListAdapter extends RecyclerView.Adapter<RemindListAdapter.Re
     public static class RemindViewHolder extends RecyclerView.ViewHolder{
         CardView cardView;
         TextView title;
-
+        TextView date;
 
         public RemindViewHolder(View itemView) {
             super(itemView);
 
             cardView = (CardView) itemView.findViewById(R.id.cardView);
             title = (TextView) itemView.findViewById(R.id.title);
+            date = (TextView) itemView.findViewById(R.id.date);
         }
+    }
+
+    public void setData(List<RemindDTO> data) {
+        this.data = data;
     }
 }

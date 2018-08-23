@@ -1,5 +1,6 @@
 package com.remind.azick.remindme;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.TabLayout;
@@ -11,6 +12,16 @@ import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 
 import com.remind.azick.remindme.adapter.TabsFragmentAdapter;
+import com.remind.azick.remindme.dto.RemindDTO;
+
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity{
 
@@ -20,6 +31,7 @@ public class MainActivity extends AppCompatActivity{
     private Toolbar toolbar;
     private DrawerLayout drawerLayout;
     private ViewPager viewPager;
+    private TabsFragmentAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,8 +59,10 @@ public class MainActivity extends AppCompatActivity{
 
     private void initTabs() {
         viewPager = (ViewPager)findViewById(R.id.viewPager);
-        TabsFragmentAdapter adapter = new TabsFragmentAdapter(this, getSupportFragmentManager());
+        adapter = new TabsFragmentAdapter(this, getSupportFragmentManager());
         viewPager.setAdapter(adapter);
+
+        new RemindMeTask().execute();
 
         TabLayout tabLayout = (TabLayout)findViewById(R.id.tabLayout);
         tabLayout.setupWithViewPager(viewPager);
@@ -79,5 +93,27 @@ public class MainActivity extends AppCompatActivity{
 
     private void showNotificationTab(){
         viewPager.setCurrentItem(Constants.TAB_TWO);
+    }
+
+    private class RemindMeTask extends AsyncTask<Void, Void, List<RemindDTO>>{
+        @Override
+        protected List<RemindDTO> doInBackground(Void... params) {
+            RestTemplate template = new RestTemplate();
+
+            ResponseEntity<List<RemindDTO>> remindResponse = template.exchange(Constants.URL.GET_REMIND_ITEM, HttpMethod.GET, null, new ParameterizedTypeReference<List<RemindDTO>>() {
+            });
+            List<RemindDTO> list = remindResponse.getBody();
+            RemindDTO r = new RemindDTO();
+            return list;
+//            RestTemplate template = new RestTemplate();
+//            template.getMessageConverters().add(new MappingJackson2HttpMessageConverter());
+//            return template.getForObject(Constants.URL.GET_REMIND_ITEM, RemindDTO.class);
+        }
+
+        @Override
+        protected void onPostExecute(List<RemindDTO> list) {
+            adapter.setData(list);
+        }
+
     }
 }
